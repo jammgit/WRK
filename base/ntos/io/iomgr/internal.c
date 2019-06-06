@@ -3948,7 +3948,6 @@ Notes:
 
     if (!NT_SUCCESS( status )) {
 
-
         //
         // If the image was not already loaded then exit.
         //
