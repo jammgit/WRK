@@ -678,12 +678,12 @@ Return Value:
         return FALSE;
     }
 
-    //
+    // 内部调用 IopInitializeBuiltinDriver 实现初始化，
     // Initialize the drivers loaded by the boot loader (OSLOADER)
     //
 
     nextDriverObject = &driverObject;
-    if (!IopInitializeBootDrivers( LoaderBlock,
+    if (!IopInitializeBootDrivers( LoaderBlock,         
                                    nextDriverObject )) {
 
 #if DBG
@@ -767,7 +767,7 @@ Return Value:
         return FALSE;
     }
 
-    IopCallDriverReinitializationRoutines();
+    IopCallDriverReinitializationRoutines();        // win7及以上内核都在system start driver （IopInitializeSystemDrivers）初始化前调用
 
     //
     // Reassign \SystemRoot to NT device name path.
@@ -2508,7 +2508,7 @@ Return Value:
     InitializeDriverObject( driverObject );
     driverObject->DriverInit = DriverInitializeRoutine;
 
-    //
+    //  插入内核句柄表
     // Insert the driver object into the object table.
     //
 
@@ -2536,7 +2536,7 @@ Return Value:
                                         (PVOID *) &tmpDriverObject,
                                         (POBJECT_HANDLE_INFORMATION) NULL );
     ASSERT(status == STATUS_SUCCESS);
-    //
+    //  根据PsLoadedModuleList 初始化驱动对象信息
     // Fill in the DriverSection so the image will be automatically unloaded on
     // failures. We should use the entry from the PsModuleList.
     //
@@ -2679,7 +2679,7 @@ Return Value:
     KeQuerySystemTime (&stime);
 #endif
 
-    //
+    //  调用DriverEntry
     // Now invoke the driver's initialization routine to initialize itself.
     //
 
@@ -2719,7 +2719,7 @@ exit:
     NtClose( handle );
 
     if (NT_SUCCESS( status )) {
-        IopReadyDeviceObjects( driverObject );
+        IopReadyDeviceObjects( driverObject );          // 之后，驱动的设备对象就可以被其他驱动访问人=了
         HeadlessKernelAddLogEntry(HEADLESS_LOG_LOAD_SUCCESSFUL, NULL);
         *Result = driverObject;
         return status;
@@ -2959,7 +2959,7 @@ Return Value:
 
     sprintf( deviceNameBuffer,
              ArcNameFmt,
-             LoaderBlock->ArcBootDeviceName );
+             LoaderBlock->ArcBootDeviceName );          // +0x078 ArcBootDeviceName : 0xfffff800`00829190  "multi(0)disk(0)rdisk(0)partition(1)"
 
     RtlInitAnsiString( &deviceNameString, deviceNameBuffer );
 

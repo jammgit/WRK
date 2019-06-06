@@ -1115,7 +1115,7 @@ Return Value:
     //
     // Check is this handle is a kernel handle or one of the two builtin pseudo handles
     //
-    if ((LONG)(ULONG_PTR) Handle < 0) {
+    if ((LONG)(ULONG_PTR) Handle < 0) { //  当前进程、线程句柄分别是-1，-2. 内核句柄从 0x80000000 开始，所以也会小于零
         //
         //  If the handle is equal to the current process handle and the object
         //  type is NULL or type process, then attempt to translate a handle to
@@ -1206,12 +1206,12 @@ Return Value:
         } else if (AccessMode == KernelMode) {
             //
             //  Make the handle look like a regular handle
-            //
+            //  . 内核句柄从 0x80000000 开始，所以会小于零
 
-            Handle = DecodeKernelHandle( Handle );
+            Handle = DecodeKernelHandle( Handle );      // 去掉最高1位
 
             //
-            //  The global kernel handle table
+            //  The global kernel handle table， 系统进程句柄表，
             //
 
             HandleTable = ObpKernelHandleTable;
@@ -1224,6 +1224,7 @@ Return Value:
         }
 
     } else {
+        // 拿进程句柄表
         HandleTable = PsGetCurrentProcessByThread(Thread)->ObjectTable;
     }
 
@@ -1235,7 +1236,7 @@ Return Value:
 
     KeEnterCriticalRegionThread(&Thread->Tcb);
 
-    //
+    //  HANDLE 不是数组索引，需要经过一些计算得到OBJECT指针
     //  Translate the specified handle to an object table index.
     //
 
@@ -1341,7 +1342,7 @@ Return Value:
 
     } else {
 
-        Status = STATUS_INVALID_HANDLE;
+        Status = STATUS_INVALID_HANDLE;     // 找不到HADNLE entry
     }
 
     KeLeaveCriticalRegionThread(&Thread->Tcb);

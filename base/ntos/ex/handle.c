@@ -3583,7 +3583,7 @@ Return Value:
         return NULL;        
     }
 
-    //
+    //  ”句柄表基址“
     // Now fetch the table address and level bits. We must preserve the
     // ordering here.
     //
